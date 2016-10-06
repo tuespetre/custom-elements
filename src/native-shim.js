@@ -21,10 +21,7 @@
   let origHTMLElement = HTMLElement;
   // TODO(justinfagnani): Tests!!
   window.HTMLElement = function() {
-    // prefer new.target for elements that call super() constructors or
-    // Reflect.construct directly
-    let newTarget = new.target || this.constructor;
-    return Reflect.construct(origHTMLElement, [], newTarget);
+    return Reflect.construct(origHTMLElement, [], this.constructor);
   }
   HTMLElement.prototype = Object.create(origHTMLElement.prototype, {
     constructor: {value: HTMLElement, configurable: true, writable: true},
