@@ -15,18 +15,23 @@
  * current under-construction element's definition.
  *
  * Because `new.target` is a syntax error in VMs that don't support it, this
- * shim must only be loaded in browsers that do.
+ * shim is wrapped in a function constructor within a try/catch block.
  */
-(() => {
-  let origHTMLElement = HTMLElement;
+try {
   // TODO(justinfagnani): Tests!!
-  window.HTMLElement = function() {
-    // prefer new.target for elements that call super() constructors or
-    // Reflect.construct directly
-    let newTarget = new.target || this.constructor;
-    return Reflect.construct(origHTMLElement, [], newTarget);
-  }
-  HTMLElement.prototype = Object.create(origHTMLElement.prototype, {
-    constructor: {value: HTMLElement, configurable: true, writable: true},
-  });
-})();
+  // prefer new.target for elements that call super() constructors or
+  // Reflect.construct directly
+  new Function(`
+    let origHTMLElement = HTMLElement;
+    window.HTMLElement = function() {
+      let newTarget = new.target || this.constructor;
+      return Reflect.construct(origHTMLElement, [], newTarget);
+    }
+    HTMLElement.prototype = Object.create(origHTMLElement.prototype, {
+      constructor: {value: HTMLElement, configurable: true, writable: true},
+    });
+  `)();
+}
+catch (error) {
+  // no-op 
+}
